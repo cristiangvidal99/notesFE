@@ -4,10 +4,11 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Copiar solo los archivos de dependencias primero (aprovecha caché de Docker)
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json* ./
 
 # Instalar dependencias (incluyendo devDependencies para el build)
-RUN npm ci
+# Usa npm install para regenerar el lock file si está desactualizado
+RUN npm install
 
 # Copiar el resto del código fuente
 COPY . .
