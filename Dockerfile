@@ -1,5 +1,6 @@
 # Stage 1: Builder - Compilar la aplicación
-FROM node:18-alpine AS builder
+# Usamos Node estándar (no Alpine) para compatibilidad con módulos nativos como rolldown-vite
+FROM node:18 AS builder
 
 WORKDIR /app
 

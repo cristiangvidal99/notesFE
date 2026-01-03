@@ -3,11 +3,13 @@
 ## 🐳 Construcción Local
 
 ### Construir la imagen:
+
 ```bash
 docker build -t notesfe:latest .
 ```
 
 ### Ejecutar el contenedor:
+
 ```bash
 docker run -p 8080:80 notesfe:latest
 ```
@@ -32,6 +34,7 @@ La aplicación estará disponible en `http://localhost:8080`
 1. En Render, crea un nuevo **Web Service**
 2. Conecta tu repositorio de GitHub
 3. Configura:
+
    - **Environment**: Docker
    - **Dockerfile Path**: `./Dockerfile`
    - **Docker Context**: `.`
@@ -39,6 +42,7 @@ La aplicación estará disponible en `http://localhost:8080`
    - **Start Command**: (dejar vacío, Docker lo maneja)
 
 4. Agrega las variables de entorno:
+
    - `VITE_API_URL`: URL de tu API backend
    - `VITE_SUPABASE_URL`: (si aplica)
    - `VITE_SUPABASE_ANON_KEY`: (si aplica)
@@ -55,7 +59,8 @@ VITE_API_URL=https://tu-api-backend.onrender.com
 # VITE_API_URL=http://localhost:8000
 ```
 
-**Nota Importante**: 
+**Nota Importante**:
+
 - Las variables que empiezan con `VITE_` se inyectan en el **build time** (no runtime)
 - Render automáticamente las pasa como build args al Dockerfile
 - Si cambias estas variables, necesitas hacer un nuevo deploy para que se apliquen
@@ -63,27 +68,32 @@ VITE_API_URL=https://tu-api-backend.onrender.com
 ## 🔧 Optimizaciones Aplicadas
 
 ✅ **Multi-stage builds**: Reduce el tamaño final de la imagen
-✅ **Imagen Alpine**: ~150MB vs ~900MB (85% más pequeño)
+✅ **Builder con Node estándar**: Compatible con módulos nativos (rolldown-vite)
+✅ **Producción con Alpine**: Nginx Alpine mantiene la imagen pequeña (~85MB)
 ✅ **Caché de Docker**: Orden estratégico de comandos
 ✅ **Nginx optimizado**: Gzip, cache headers, SPA routing
 
+**Nota**: El builder usa Node estándar para compatibilidad con módulos nativos, pero la imagen final sigue siendo pequeña porque solo copiamos los archivos compilados.
+
 ## 📊 Resultados Esperados
 
-- **Tamaño de imagen**: ~85MB (vs 1.2GB sin optimizar)
-- **Tiempo de build**: ~2-3 minutos
-- **Tiempo de deploy**: 15x más rápido
+- **Tamaño de imagen final**: ~85MB (solo nginx:alpine + archivos compilados)
+- **Tiempo de build**: ~3-5 minutos (incluye compilación de dependencias nativas)
+- **Tiempo de deploy**: 15x más rápido que sin optimizar
 
 ## 🐛 Troubleshooting
 
 ### Build falla
+
 - Verifica que `package.json` y `package-lock.json` estén en el repo
 - Revisa los logs de build en Render
 
 ### Variables de entorno no funcionan
+
 - Recuerda que Vite necesita variables con prefijo `VITE_`
 - Reinicia el servicio después de agregar variables
 
 ### Rutas no funcionan (404)
+
 - Verifica que `nginx.conf` esté copiado correctamente
 - El archivo debe tener la regla `try_files` para SPA routing
-
